@@ -11,3 +11,5 @@ code/target/
 code/crates/unwreck-hooks/fixtures/captured/*
 !code/crates/unwreck-hooks/fixtures/captured/.gitkeep
 unwreck-code.tar.gz
+docs/internal/
+docs/demo/demo.mp4

@@ -14,7 +14,7 @@ Ctrl+Z for AI coding agents
 
 ![unwreck undo restoring files after an agent ran rm -rf](docs/demo/demo.gif)
 
-Demo uses a scripted agent session with the real unwreck hooks. The same thing happens with Codex, Claude Code, and Gemini CLI.
+The demo simulates an agent session while running the real unwreck hooks.
 
 </div>
 
@@ -116,7 +116,7 @@ flowchart LR
 
 ## Performance
 
-On a 10,000-file, 40 MB test tree, 20 release-build runs of `scripts/bench.sh` with `BENCH_AGE=1` measured:
+On the synthetic 10,000-file (~40 MB) tree created by `scripts/bench.sh`, 20 release-build runs measured:
 
 | | ms |
 |---|---|

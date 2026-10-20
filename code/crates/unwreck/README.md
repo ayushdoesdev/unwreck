@@ -10,7 +10,7 @@
 
 ![unwreck undo restoring files after an agent ran rm -rf](https://raw.githubusercontent.com/ayushdoesdev/unwreck/main/docs/demo/demo.gif)
 
-Demo uses a scripted agent session with the real unwreck hooks. The same thing happens with Codex, Claude Code, and Gemini CLI.
+The demo simulates an agent session while running the real unwreck hooks.
 
 </div>
 
@@ -112,7 +112,7 @@ flowchart LR
 
 ## Performance
 
-Measured on this box with `scripts/bench.sh`, `BENCH_AGE=1`, release build, 20 runs, 10,000 files / 40 MB:
+On the synthetic 10,000-file (~40 MB) tree created by `scripts/bench.sh`, 20 release-build runs measured:
 
 | | ms |
 |---|---|
