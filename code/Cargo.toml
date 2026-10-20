@@ -1,0 +1,46 @@
+[workspace]
+resolver = "3"
+members = ["crates/*"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.90"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/ayushdoesdev/unwreck"
+homepage = "https://github.com/ayushdoesdev/unwreck"
+keywords = ["undo", "snapshot", "cli", "ai", "checkpoint"]
+categories = ["command-line-utilities", "development-tools"]
+
+[workspace.dependencies]
+# versions verified on crates.io 2026-10-18 (max stable)
+anyhow = "1.0.104"
+thiserror = "2.0.21"
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.154"
+blake3 = "1.8.7"
+zstd = "0.14.3"
+ignore = "0.4.33"
+rayon = "1.12.0"
+notify = "8.2.0"
+notify-debouncer-full = "0.7.0"
+clap = { version = "4.6.7", features = ["derive"] }
+ratatui = "0.30.2"
+directories = "6.0.0"
+tempfile = "3.27.0"
+similar = "2.7.0"
+toml = "0.8.23"
+proptest = "1.12.0"
+
+unwreck-core = { path = "crates/unwreck-core", version = "0.1.0" }
+unwreck-store = { path = "crates/unwreck-store", version = "0.1.0" }
+unwreck-scan = { path = "crates/unwreck-scan", version = "0.1.0" }
+unwreck-watch = { path = "crates/unwreck-watch", version = "0.1.0" }
+unwreck-hooks = { path = "crates/unwreck-hooks", version = "0.1.0" }
+unwreck-restore = { path = "crates/unwreck-restore", version = "0.1.0" }
+unwreck-tui = { path = "crates/unwreck-tui", version = "0.1.0" }
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
+strip = true

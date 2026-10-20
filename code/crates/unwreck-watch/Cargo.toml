@@ -1,0 +1,17 @@
+[package]
+name = "unwreck-watch"
+description = "Filesystem quiescence detection for unwreck run/watch"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+readme = "README.md"
+keywords.workspace = true
+categories.workspace = true
+
+[dependencies]
+notify.workspace = true
+notify-debouncer-full.workspace = true
+thiserror.workspace = true

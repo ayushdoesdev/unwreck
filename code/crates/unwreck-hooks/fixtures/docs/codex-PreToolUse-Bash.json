@@ -1,0 +1,8 @@
+{
+  "hook_event_name": "PreToolUse",
+  "session_id": "codex-sess-docs",
+  "turn_id": "turn-docs-1",
+  "cwd": "/tmp/unwreck-fixture",
+  "tool_name": "Bash",
+  "tool_input": { "command": "rm -rf src/gen .env" }
+}

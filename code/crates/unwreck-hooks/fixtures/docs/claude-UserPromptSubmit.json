@@ -1,0 +1,8 @@
+{
+  "session_id": "sess-docs-example",
+  "transcript_path": "/tmp/transcript.jsonl",
+  "cwd": "/tmp/unwreck-fixture",
+  "hook_event_name": "UserPromptSubmit",
+  "prompt": "clean up generated code",
+  "prompt_id": "prompt-docs-1"
+}

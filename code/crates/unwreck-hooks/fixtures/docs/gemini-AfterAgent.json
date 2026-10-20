@@ -1,0 +1,4 @@
+{
+  "hook_event_name": "AfterAgent",
+  "cwd": "/tmp/unwreck-fixture"
+}

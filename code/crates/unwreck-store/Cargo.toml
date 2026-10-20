@@ -1,0 +1,23 @@
+[package]
+name = "unwreck-store"
+description = "Content-addressed snapshot store (BLAKE3, zstd packs) for unwreck"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+readme = "README.md"
+keywords.workspace = true
+categories.workspace = true
+
+[dependencies]
+unwreck-core.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+blake3.workspace = true
+zstd.workspace = true
+thiserror.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true

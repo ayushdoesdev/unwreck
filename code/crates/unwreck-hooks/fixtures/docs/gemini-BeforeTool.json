@@ -1,0 +1,6 @@
+{
+  "hook_event_name": "BeforeTool",
+  "cwd": "/tmp/unwreck-fixture",
+  "tool_name": "run_shell_command",
+  "tool_input": { "command": "rm -rf dist" }
+}

@@ -1,0 +1,21 @@
+# cargo-dist 0.32 config (https://opensource.axo.dev/cargo-dist/).
+# Workspace root is this `code/` directory. Generate CI with:
+#   cargo dist generate
+# after https://github.com/ayushdoesdev/unwreck exists.
+[workspace]
+members = ["cargo:."]
+
+[dist]
+cargo-dist-version = "0.32.0"
+ci = "github"
+installers = ["shell", "powershell"]
+targets = [
+  "x86_64-unknown-linux-musl",
+  "x86_64-apple-darwin",
+  "aarch64-apple-darwin",
+  "x86_64-pc-windows-msvc",
+]
+unix-archive = ".tar.xz"
+windows-archive = ".zip"
+github-releases = true
+pr-run-mode = "plan"

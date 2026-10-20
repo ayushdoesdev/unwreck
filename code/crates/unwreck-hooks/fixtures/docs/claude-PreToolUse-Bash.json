@@ -1,0 +1,9 @@
+{
+  "session_id": "sess-docs-example",
+  "cwd": "/tmp/unwreck-fixture",
+  "hook_event_name": "PreToolUse",
+  "prompt_id": "prompt-docs-1",
+  "tool_name": "Bash",
+  "tool_input": { "command": "rm -rf src/gen .env" },
+  "tool_use_id": "toolu-docs-1"
+}

@@ -1,0 +1,5 @@
+{
+  "hook_event_name": "BeforeAgent",
+  "cwd": "/tmp/unwreck-fixture",
+  "prompt": "refactor the parser"
+}

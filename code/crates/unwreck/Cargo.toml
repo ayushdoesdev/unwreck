@@ -1,0 +1,33 @@
+[package]
+name = "unwreck"
+description = "Undo for AI coding agents: snapshot every turn, restore any of them"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+readme = "README.md"
+keywords.workspace = true
+categories.workspace = true
+
+[dependencies]
+unwreck-core.workspace = true
+unwreck-store.workspace = true
+unwreck-scan.workspace = true
+unwreck-watch.workspace = true
+unwreck-hooks.workspace = true
+unwreck-restore.workspace = true
+unwreck-tui.workspace = true
+clap.workspace = true
+anyhow.workspace = true
+directories.workspace = true
+serde_json.workspace = true
+similar.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true
+
+[[bin]]
+name = "unwreck"
+path = "src/main.rs"

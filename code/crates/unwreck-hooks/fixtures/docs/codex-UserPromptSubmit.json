@@ -1,0 +1,7 @@
+{
+  "hook_event_name": "UserPromptSubmit",
+  "session_id": "codex-sess-docs",
+  "turn_id": "turn-docs-1",
+  "cwd": "/tmp/unwreck-fixture",
+  "prompt": "fix the failing tests"
+}

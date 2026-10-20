@@ -1,0 +1,13 @@
+code/target/
+*.tar.gz
+.DS_Store
+*.unwreck.tmp
+*.unwreck.bak
+.idea/
+.vscode/
+.cursor/
+*.swp
+*~
+code/crates/unwreck-hooks/fixtures/captured/*
+!code/crates/unwreck-hooks/fixtures/captured/.gitkeep
+unwreck-code.tar.gz

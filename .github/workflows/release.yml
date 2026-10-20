@@ -1,0 +1,72 @@
+# Release artifacts for v* tags. Targets match code/dist-workspace.toml (cargo-dist 0.32).
+# After the GitHub repo exists you can run `cargo dist generate` from code/ and
+# replace this file with the generated workflow if you prefer stock cargo-dist CI.
+name: release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-musl
+            archive: tar.xz
+          - os: macos-latest
+            target: x86_64-apple-darwin
+            archive: tar.xz
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            archive: tar.xz
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            archive: zip
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: code
+      - name: musl tools
+        if: endsWith(matrix.target, 'linux-musl')
+        run: sudo apt-get update && sudo apt-get install -y musl-tools
+      - name: build
+        working-directory: code
+        run: cargo build --release --bin unwreck --target ${{ matrix.target }}
+      - name: pack unix
+        if: matrix.archive == 'tar.xz'
+        run: |
+          BIN=code/target/${{ matrix.target }}/release/unwreck
+          STAGE=unwreck-${{ matrix.target }}
+          mkdir "$STAGE"
+          cp "$BIN" LICENSE-MIT LICENSE-APACHE README.md "$STAGE/"
+          tar -cJf "$STAGE.tar.xz" "$STAGE"
+      - name: pack windows
+        if: matrix.archive == 'zip'
+        shell: bash
+        run: |
+          BIN=code/target/${{ matrix.target }}/release/unwreck.exe
+          STAGE=unwreck-${{ matrix.target }}
+          mkdir "$STAGE"
+          cp "$BIN" LICENSE-MIT LICENSE-APACHE README.md "$STAGE/"
+          7z a "$STAGE.zip" "$STAGE"
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            unwreck-${{ matrix.target }}.tar.xz
+            unwreck-${{ matrix.target }}.zip
+            install/unwreck-installer.sh
+            install/unwreck-installer.ps1
+          fail_on_unmatched_files: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

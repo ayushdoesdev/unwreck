@@ -1,0 +1,23 @@
+[package]
+name = "unwreck-scan"
+description = "Worktree walker and snapshot builder for unwreck"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+readme = "README.md"
+keywords.workspace = true
+categories.workspace = true
+
+[dependencies]
+unwreck-core.workspace = true
+unwreck-store.workspace = true
+blake3.workspace = true
+ignore.workspace = true
+rayon.workspace = true
+thiserror.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true
