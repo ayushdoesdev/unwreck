@@ -18,13 +18,13 @@ Demo uses a scripted agent session with the real unwreck hooks. The same thing h
 
 </div>
 
-## Why
+## Overview
 
-Coding agents delete untracked files and rewrite trees through the shell. Claude Code's `/rewind` does **not** track Bash changes ([docs](https://code.claude.com/docs/en/checkpointing)). Codex users have been asking for `/undo` back ([#9203](https://github.com/openai/codex/issues/9203)). unwreck snapshots the working tree *before* those tools run, including `.env` and other small gitignored files, so one command puts the turn back.
+unwreck keeps local snapshots of your working tree so you can undo changes made by coding agents. Hooks capture changes before supported tools run, including shell commands and edits to untracked files. You can also run unwreck around another command with `unwreck run`.
 
 ## Install
 
-Needs [Rust](https://www.rust-lang.org/tools/install) 1.90+ for `cargo install`. Binaries (no Rust required): Linux musl x86_64, macOS x86_64/aarch64, Windows x86_64. aarch64 Linux is planned for 0.1.1.
+Needs [Rust](https://www.rust-lang.org/tools/install) 1.90+ for `cargo install`. Prebuilt binaries are available for Linux musl x86_64, macOS x86_64/aarch64, and Windows x86_64.
 
 ```sh
 cargo install unwreck
@@ -35,7 +35,7 @@ irm https://github.com/ayushdoesdev/unwreck/releases/latest/download/unwreck-ins
 
 Or download a build from [GitHub Releases](https://github.com/ayushdoesdev/unwreck/releases).
 
-## 60-second quickstart
+## Quick start
 
 ```sh
 unwreck hooks --write          # Claude Code, Codex, and Gemini CLI (project config)
@@ -50,13 +50,13 @@ Codex asks you to review and trust a new hook once. Agents without hooks (aider,
 unwreck run -- aider
 ```
 
-## Features
+## What it does
 
-- 🪝 **Before the shell, not after.** Snapshots run on `PreToolUse` / `BeforeTool`, so `rm`, `mv`, and `sed -i` are undoable.
-- 📦 **Untracked and ignored.** `.env*` is kept; `node_modules`, `target`, and similar dirs are skipped.
-- 🛡️ **Your edits win.** A file you changed after the snapshot is skipped on restore unless you pass `--force` (and `--force` is still redoable).
-- 💾 **Local store.** BLAKE3 + zstd, outside the repo. Nothing is uploaded. `.git` is never touched.
-- 🖥️ **TUI.** Timeline, file list, and unified diff.
+- Hooks run before supported tools, so shell changes such as `rm` and `mv` can be undone.
+- Untracked files and selected ignored files such as `.env` are included. Large generated directories such as `node_modules` and `target` are skipped.
+- Restore skips files changed since the snapshot unless you use `--force`.
+- Snapshots are stored locally, outside the repository. unwreck does not write inside `.git`.
+- The TUI shows the snapshot timeline, changed files, and diffs.
 
 ![unwreck tui: snapshot timeline, file list, and diff pane](docs/demo/tui.gif)
 
@@ -105,8 +105,6 @@ flowchart LR
 - `undo` restores the previous **turn boundary**. Every restore snapshots first, which is what makes `redo` possible.
 - Restore never overwrites a file whose bytes changed after the last snapshot, and it never writes inside `.git`.
 
-Design notes: [ARCHITECTURE.md](ARCHITECTURE.md), [PLAN.md](PLAN.md).
-
 ## Supported agents
 
 | Agent | How snapshots fire |
@@ -116,31 +114,9 @@ Design notes: [ARCHITECTURE.md](ARCHITECTURE.md), [PLAN.md](PLAN.md).
 | Gemini CLI | `BeforeAgent`, `BeforeTool` (`run_shell_command\|write_file\|replace`), `AfterAgent` |
 | Anything else | `unwreck run -- <cmd>` or `unwreck watch` |
 
-## How it compares
-
-Based on each tool's own docs or README as of 2026-10-18. Corrections welcome.
-
-<details>
-<summary>Comparison table</summary>
-
-| | unwreck | Codex `/undo` | Claude Code checkpoints (`/rewind`) | Gemini CLI checkpointing | `git stash` / commits | agent-undo (`au`) | turnback (npm) |
-|---|---|---|---|---|---|---|---|
-| Available | yes | **removed**; users asking for it back in [openai/codex#9203](https://github.com/openai/codex/issues/9203) | yes, built in | yes, **off by default** | yes | yes | yes (npm v0.9.1) |
-| Undoes shell-command changes (`rm`, `mv`, `sed -i`) | yes (snapshot before each tool hook; watcher in `run` mode) | – | **no**, per [docs](https://code.claude.com/docs/en/checkpointing) | triggers on approving file-modifying tools such as `write_file`/`replace`; shell coverage not confirmed | only what you committed or stashed | watches file writes (README) | yes, per its npm description ("including shell commands") |
-| Untracked / git-ignored files | untracked yes; ignored `.env*` yes; heavy dirs skipped | – | files edited by its tools | shadow git repo (ignore behaviour not checked) | `stash -u` / `-a` only if you remember | per README, every write | untracked yes, per its npm description; ignored files not checked |
-| Works across agents | Claude Code, Codex, Gemini (hooks) + any CLI (`run`/`watch`) | Codex only | Claude Code only | Gemini only | n/a | Claude Code hook + daemon; README lists others | Claude Code, Codex, Cursor, Gemini CLI, OpenCode, Antigravity (per its docs) |
-| Protects edits you made afterwards | yes, conflicts skipped unless `--force` | – | – | – | n/a | not documented | not checked |
-| Restores conversation too | **no** (by design) | – | yes | yes | no | no | not checked |
-| Windows | CI from v0.1 (smoke script is bash-only, skipped on Windows) | n/a (built into Codex) | n/a (built in) | n/a (built in) | yes | README lists macOS/Linux binaries | not checked |
-| Needs a background daemon | no | n/a | n/a | n/a | no | yes (`au serve`) | not checked (hooks + CLI + MCP server; needs Node.js) |
-
-turnback covers more agents than unwreck does today and adds `blame`/`recover` and an MCP server. unwreck is a single Rust binary with no runtime dependency, and its restore skips files you've edited since (conflict-aware). Pick whichever fits.
-
-</details>
-
 ## Performance
 
-Measured on this box with `scripts/bench.sh`, `BENCH_AGE=1`, release build, 20 runs, 10,000 files / 40 MB:
+On a 10,000-file, 40 MB test tree, 20 release-build runs of `scripts/bench.sh` with `BENCH_AGE=1` measured:
 
 | | ms |
 |---|---|
@@ -149,15 +125,13 @@ Measured on this box with `scripts/bench.sh`, `BENCH_AGE=1`, release build, 20 r
 | Unchanged hook snapshot p95 | 29.4 |
 | Store after that snapshot (`du -sk`) | 3512 KiB |
 
-Budget for an unchanged 10k-file hook snapshot is p50 ≤ 30 ms.
-
 ## FAQ
 
 **Is my data sent anywhere?** No. There is no telemetry and no network client in the snapshot path. Files stay in the local store (`$UNWRECK_DIR` or the platform data directory under `projects/<hash>`).
 
 **Does it touch `.git`?** No. Restore never writes inside `.git`. If an agent ran `git reset --hard`, unwreck can put your files back; use `git reflog` for branches and refs.
 
-**Disk usage?** Identical contents are stored once (BLAKE3) and compressed (zstd). The 10k-file / 40 MB bench tree used 3512 KiB on disk after the first snapshot. Default retention is 500 newest snapshots and 30 days; `unwreck gc` drops the rest.
+**Disk usage?** Identical contents are stored once and compressed. By default, unwreck keeps the newest 500 snapshots and snapshots from the last 30 days; `unwreck gc` removes older ones.
 
 ## Limitations
 
