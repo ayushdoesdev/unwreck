@@ -1,4 +1,4 @@
-//! unwreck CLI. See PLAN.md "CLI spec".
+//! unwreck CLI.
 mod doctor;
 mod patch;
 mod style;
