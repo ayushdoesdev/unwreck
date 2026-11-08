@@ -6,7 +6,9 @@ use std::path::Path;
 #[cfg(unix)]
 use std::os::unix::fs::{OpenOptionsExt, PermissionsExt};
 
+#[cfg(unix)]
 const DIR_MODE: u32 = 0o700;
+#[cfg(unix)]
 const FILE_MODE: u32 = 0o600;
 
 pub(crate) fn ensure_private_dir(p: &Path) -> io::Result<()> {
@@ -68,7 +70,7 @@ pub fn permission_warnings(root: &Path) -> Vec<String> {
     #[cfg(not(unix))]
     {
         let _ = root;
-        return Vec::new();
+        Vec::new()
     }
     #[cfg(unix)]
     {

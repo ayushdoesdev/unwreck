@@ -61,6 +61,8 @@ pub(crate) fn make_writable(p: &Path) {
     {
         let mut perm = meta.permissions();
         if perm.readonly() {
+            // On Windows, clearing the read-only attribute is the supported way to make the file writable.
+            #[allow(clippy::permissions_set_readonly_false)]
             perm.set_readonly(false);
             let _ = fs::set_permissions(p, perm);
         }

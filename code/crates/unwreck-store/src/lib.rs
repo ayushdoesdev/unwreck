@@ -340,7 +340,8 @@ impl Store {
         }
         let mut dirs = HashSet::new();
         for (tmp, dest, h) in batch.loose {
-            File::open(&tmp)?.sync_all()?;
+            // Windows requires a write-capable handle for FlushFileBuffers (sync_all).
+            fs::OpenOptions::new().write(true).open(&tmp)?.sync_all()?;
             let parent = dest.parent().expect("object has parent").to_path_buf();
             ensure_private_dir(&parent)?;
             fs::rename(&tmp, &dest)?;
