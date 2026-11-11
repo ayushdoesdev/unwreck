@@ -1037,7 +1037,9 @@ mod tests {
         let s = Store::open(dir.path()).unwrap();
         let _l = s.lock().unwrap();
         let h = s.put(b"important").unwrap();
-        let pinned = s.write_manifest(manual(), vec![file("important.txt", h)], vec![]).unwrap();
+        let pinned = s
+            .write_manifest(manual(), vec![file("important.txt", h)], vec![])
+            .unwrap();
         let disposable = s.write_manifest(manual(), vec![], vec![]).unwrap();
 
         assert!(s.set_pinned(pinned.id, true).unwrap());
@@ -1052,7 +1054,10 @@ mod tests {
         assert!(s.set_pinned(pinned.id, false).unwrap());
         assert!(!s.set_pinned(pinned.id, false).unwrap());
         s.gc(&[disposable.id]).unwrap();
-        assert!(matches!(s.read_manifest(pinned.id), Err(StoreError::NoSnapshot(_))));
+        assert!(matches!(
+            s.read_manifest(pinned.id),
+            Err(StoreError::NoSnapshot(_))
+        ));
         assert!(s.pinned().unwrap().is_empty());
     }
 

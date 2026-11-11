@@ -259,7 +259,12 @@ fn real_main(cli: Cli) -> Result<()> {
             } else {
                 for id in ids {
                     let m = store.read_manifest(id)?;
-                    println!("#{:<5} {:>4} files  {}", id, m.entries.len(), m.trigger.label());
+                    println!(
+                        "#{:<5} {:>4} files  {}",
+                        id,
+                        m.entries.len(),
+                        m.trigger.label()
+                    );
                 }
             }
         }
