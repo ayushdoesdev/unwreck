@@ -69,6 +69,8 @@ unwreck run -- aider
 | `unwreck run -- <cmd…>` | Snapshot around any CLI (`--quiet-ms`, default 1500) |
 | `unwreck watch` | Same watcher without spawning a child |
 | `unwreck snap [-m msg]` | Manual snapshot (always written) |
+| `unwreck pin <id>` / `unpin <id>` | Protect / unprotect a snapshot from garbage collection |
+| `unwreck pinned` | List protected snapshots |
 | `unwreck log [-n 20]` | Timeline, newest last |
 | `unwreck diff [N [M]]` | No args: last turn-start vs disk. One id vs disk. Two ids vs each other. `--patch` for unified diffs |
 | `unwreck restore <id>` | Make the tree match that snapshot (`--only`, `--force`, `--dry-run`) |
@@ -88,7 +90,7 @@ keep_turns = 500   # newest N snapshots (default)
 keep_days = 30     # also keep anything this new
 ```
 
-`unwreck gc --keep N` keeps only the newest N for that run. Packs are rewritten only when more than 30% of the file is unreferenced.
+`unwreck gc --keep N` keeps only the newest N for that run. Packs are rewritten only when more than 30% of the file is unreferenced. Pinned snapshots are always retained until unpinned.
 
 </details>
 

@@ -80,6 +80,12 @@ enum Cmd {
         #[arg(short, long)]
         message: Option<String>,
     },
+    /// Protect a snapshot from automatic garbage collection.
+    Pin { id: u64 },
+    /// Remove garbage-collection protection from a snapshot.
+    Unpin { id: u64 },
+    /// List snapshots protected from garbage collection.
+    Pinned,
     /// List snapshots, newest last.
     Log {
         #[arg(short = 'n', long, default_value_t = 20)]
@@ -229,6 +235,38 @@ fn real_main(cli: Cli) -> Result<()> {
         Cmd::Snap { message } => {
             let m = snap(&root, &store, Trigger::Manual { label: message })?;
             println!("snapshot #{} ({} files)", m.id, m.entries.len());
+        }
+        Cmd::Pin { id } => {
+            let _l = store.lock()?;
+            if store.set_pinned(id, true)? {
+                println!("pinned snapshot #{id}");
+            } else {
+                println!("snapshot #{id} is already pinned");
+            }
+        }
+        Cmd::Unpin { id } => {
+            let _l = store.lock()?;
+            if store.set_pinned(id, false)? {
+                println!("unpinned snapshot #{id}");
+            } else {
+                println!("snapshot #{id} was not pinned");
+            }
+        }
+        Cmd::Pinned => {
+            let ids = store.pinned()?;
+            if ids.is_empty() {
+                println!("no pinned snapshots");
+            } else {
+                for id in ids {
+                    let m = store.read_manifest(id)?;
+                    println!(
+                        "#{:<5} {:>4} files  {}",
+                        id,
+                        m.entries.len(),
+                        m.trigger.label()
+                    );
+                }
+            }
         }
         Cmd::Log { limit } => log(&store, limit)?,
         Cmd::Diff { from, to, patch } => {

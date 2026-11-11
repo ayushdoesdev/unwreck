@@ -109,6 +109,7 @@ impl Drop for StoreLock {
 }
 
 const TIP: &str = "tip.json";
+const PINNED: &str = "pinned.json";
 
 /// Compact identity of the latest snapshot, so an unchanged scan can skip reading the
 /// full manifest. Missing or corrupt `tip.json` falls back to `latest()`.
@@ -387,6 +388,43 @@ impl Store {
         fs::read(self.root.join(name)).ok()
     }
 
+    /// Snapshot ids protected from garbage collection.
+    ///
+    /// A malformed pin list is an error rather than silently risking deletion.
+    pub fn pinned(&self) -> Result<Vec<u64>> {
+        let Some(bytes) = self.read_aux(PINNED) else {
+            return Ok(Vec::new());
+        };
+        let mut ids: Vec<u64> = serde_json::from_slice(&bytes)?;
+        ids.sort_unstable();
+        ids.dedup();
+        Ok(ids)
+    }
+
+    /// Pin or unpin a snapshot. Caller must hold `lock()`.
+    ///
+    /// Returns whether the pin state changed. Pinning requires an existing snapshot.
+    pub fn set_pinned(&self, id: u64, pinned: bool) -> Result<bool> {
+        if pinned {
+            self.read_manifest(id)?;
+        }
+        let mut ids = self.pinned()?;
+        let before = ids.len();
+        if pinned {
+            if !ids.contains(&id) {
+                ids.push(id);
+                ids.sort_unstable();
+            }
+        } else {
+            ids.retain(|&saved| saved != id);
+        }
+        if ids.len() == before {
+            return Ok(false);
+        }
+        self.write_aux(PINNED, &serde_json::to_vec(&ids)?)?;
+        Ok(true)
+    }
+
     /// Sorted snapshot ids currently on disk.
     pub fn list(&self) -> Result<Vec<u64>> {
         let mut ids = Vec::new();
@@ -501,9 +539,11 @@ impl Store {
     pub fn gc(&self, keep: &[u64]) -> Result<GcReport> {
         self.commit()?;
         let mut rep = GcReport::default();
+        let mut keep_ids: HashSet<u64> = keep.iter().copied().collect();
+        keep_ids.extend(self.pinned()?);
         let mut live = HashSet::new();
         for id in self.list()? {
-            if keep.contains(&id) {
+            if keep_ids.contains(&id) {
                 for e in self.read_manifest(id)?.entries {
                     if let EntryKind::File { hash, .. } = e.kind {
                         live.insert(hash);
@@ -989,6 +1029,36 @@ mod tests {
         fs::write(&p, zstd::bulk::compress(b"old", 3).unwrap()).unwrap();
         assert!(s.has(&h));
         assert_eq!(s.get(&h).unwrap(), b"old");
+    }
+
+    #[test]
+    fn pinned_snapshots_survive_gc_until_unpinned() {
+        let dir = tempfile::tempdir().unwrap();
+        let s = Store::open(dir.path()).unwrap();
+        let _l = s.lock().unwrap();
+        let h = s.put(b"important").unwrap();
+        let pinned = s
+            .write_manifest(manual(), vec![file("important.txt", h)], vec![])
+            .unwrap();
+        let disposable = s.write_manifest(manual(), vec![], vec![]).unwrap();
+
+        assert!(s.set_pinned(pinned.id, true).unwrap());
+        assert!(!s.set_pinned(pinned.id, true).unwrap());
+        assert_eq!(s.pinned().unwrap(), vec![pinned.id]);
+
+        let report = s.gc(&[disposable.id]).unwrap();
+        assert_eq!(report.manifests_removed, 0);
+        assert_eq!(s.read_manifest(pinned.id).unwrap().id, pinned.id);
+        assert_eq!(s.get(&h).unwrap(), b"important");
+
+        assert!(s.set_pinned(pinned.id, false).unwrap());
+        assert!(!s.set_pinned(pinned.id, false).unwrap());
+        s.gc(&[disposable.id]).unwrap();
+        assert!(matches!(
+            s.read_manifest(pinned.id),
+            Err(StoreError::NoSnapshot(_))
+        ));
+        assert!(s.pinned().unwrap().is_empty());
     }
 
     #[cfg(unix)]
