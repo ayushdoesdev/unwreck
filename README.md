@@ -98,7 +98,7 @@ keep_days = 30     # also keep anything this new
 
 ```mermaid
 flowchart LR
-  hook[Agent hook] --> snap[Incremental snapshot]
+  hook[Agent hook] --> snap[Incremental snapshot] 
   snap --> store[Content-addressed store]
   store --> restore[Restore with conflict check]
 ```
